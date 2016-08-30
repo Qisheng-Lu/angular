@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		
+	</style>
+</head>
+<body>
+<div ng-controller="fontController">
+	<h1>{{pageTitle | titleCase}}</h1>
+</div>
+<script src="js/angular.js"></script>
+<script>
+var myApp = angular.module("app",[]);
+myApp.filter("titleCase",function(){
+	var titleCaseFilter = function(text){
+		var aText = text.split(' ');
+		for(var i=0;i<aText.length;i++){
+			aText[i] = aText[i].charAt(0).toUpperCase() + aText[i].slice(1);
+		}
+		return aText.join(' ');
+	};
+	return titleCaseFilter;
+});
+myApp.controller("fontController",["$scope",function($scope){
+	$scope.pageTitle = "behold the majesty of you page title";
+}]);
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<form ng-submit="submit()" ng-controller="formController">
+	count:<input type="text" ng-change="" ng-model="count">
+	total:<span>{{total}}</span><br>	
+	<button>submit</button>
+	<button ng-click="reset()">reset</button>
+</form>
+<script src="js/angular.js"></script>
+<script>
+	var myApp = angular.module("app",[]);
+	myApp.controller("formController",["$scope",function($scope){
+		// $scope.changeData = function(){
+		// 	$scope.total = $scope.count * 10;
+		// };
+		$scope.submit = function(){
+			window.alert("sorry,please get more customers first");
+		};
+		$scope.reset = function(){
+			$scope.count = 0;
+		};
+		changeData = function(){
+		 	$scope.total = $scope.count * 10;
+		};
+		$scope.$watch("count",changeData);
+	}]);
+</script>
+</body>
+</html>
