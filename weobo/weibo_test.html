@@ -1,0 +1,154 @@
+﻿<!doctype html>
+<html ng-app="zns_weibo">
+<head>
+<meta charset="utf-8">
+<title>微博ajax接口测试</title>
+<link href="style/weibo.css" rel="stylesheet" type="text/css" />
+<script src="js/angular.js"></script>
+<script>
+var app=angular.module('zns_weibo', []);
+
+app.controller('weibo', function ($scope, $http){
+	$scope.replies=[];
+    $scope.content='';
+    $scope.curPage=1;
+    $scope.pages=[];
+
+    //获取页数
+    $scope.getPages = function(){
+        $http.get('weibo.php',{
+            params:{
+                act:'get_page_count'
+            }
+        }).then(function(res){
+            $scope.pages = [];
+            var pages = res.data.count;
+            for(var i=1;i<=pages;i++){
+                if(i == $scope.curPage){
+                    $scope.pages.push({count:i,className:'active'});
+                }else{
+                    $scope.pages.push({count:i,className:''});
+                }
+            }
+        },function(err){
+            alert("获取失败");
+        });
+    };
+    //获取一页数据
+    $scope.getPageMsg=function(count){
+        $http.get('weibo.php',{
+            params:{
+                act:'get',
+                page:count
+            }
+        }).then(function(res){
+            $scope.replies = res.data;
+            $scope.curPage=count;
+            $scope.getPages();
+        },function(err){
+            alert("获取失败");
+        });
+    };
+    $scope.getPageMsg($scope.curPage);
+    //添加一条数据
+    $scope.addMsg = function(){
+        $http.get('weibo.php',{
+            params:{
+                act:'add',
+                content:$scope.content
+            }
+        }).success(function(res){
+            // $scope.replies.unshift({
+            //     id:res.id,
+            //     content:$scope.content,
+            //     time:res.time,
+            //     acc:0,
+            //     ref:0
+            // });
+            // if($scope.replies.length>6){
+            //     $scope.replies.pop();
+            // }
+            $scope.content='';
+            $scope.getPageMsg($scope.curPage);
+        }).error(function(){
+            alert("提交失败")
+        });
+    };
+    //enter按键
+    $scope.keyup = function(e){
+        var keycode = window.event?e.keyCode:e.which;
+        if(keycode==13){
+            $scope.addMsg();
+        }
+    };
+
+    //  顶/踩一条数据
+    $scope.accFn = function(id){
+        $http.get('weibo.php',{
+            params:{
+                act:'acc',
+                id:id
+            }
+        }).success(function(res){
+            for(var i=0;i<$scope.replies.length;i++){
+                if($scope.replies[i].id==id){
+                    $scope.replies[i].acc++;
+                }
+            }
+        }).error(function(){
+            alert("顶失败")
+        });
+    };
+    $scope.refFn = function(id){
+        $http.get('weibo.php',{
+            params:{
+                act:'ref',
+                id:id
+            }
+        }).success(function(res){
+            for(var i=0;i<$scope.replies.length;i++){
+                if($scope.replies[i].id==id){
+                    $scope.replies[i].ref++;
+                }
+            }
+        }).error(function(){
+            alert("踩失败")
+        });
+    };
+});
+</script>
+</head>
+
+<body ng-controller="weibo">
+<div class="znsArea">
+<!--留言-->
+     <div class="takeComment">
+        <textarea name="textarea" class="takeTextField" id="tijiaoText" ng-model="content" ng-cloak ng-keyup="keyup($event)"></textarea>
+        <div class="takeSbmComment">
+            <input type="button" class="inputs" value="" ng-click="addMsg()"/>
+            <span>(可按 Enter 回复)</span>
+        </div>
+    </div>
+<!--已留-->
+    <div class="commentOn">
+        <div class="noContent" ng-show="replies.length==0">暂无留言</div>
+        <div class="messList">
+        	<div class="reply" ng-repeat="reply in replies">
+                <p class="replyContent">{{reply.content}}</p>
+                <p class="operation">
+                    <span class="replyTime">{{reply.time*1000|date:"yyyy-MM-dd HH:mm:ss"}}</span>
+                    <span class="handle">
+                    	<a href="javascript:;" class="top" ng-click="accFn(reply.id)">{{reply.acc}}</a>
+                        <a href="javascript:;" class="down_icon" ng-click="refFn(reply.id)">{{reply.ref}}</a>
+                        <a href="javascript:;" class="cut">删除</a>
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="page">
+        	<a href="javascript:;" ng-repeat="page in pages" class="{{page.className}}" ng-click="getPageMsg(page.count)">{{page.count}}</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
